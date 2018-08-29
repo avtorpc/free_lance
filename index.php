@@ -12,11 +12,11 @@ require_once 'vendor/simple_html_dom.php';
 use app\ClassGetPage;
 use app\ClassPageResolve;
 
-$search_string = null; // или null если надо выбирать все
+$search_string = null; // или null если надо выбирать всех пользователей со страницы
 
 $cURL = new ClassGetPage;
 
-$conn = pg_connect("host=localhost port=5432 dbname=free_lance user=iq_energy_programmer password=radatop")  or die('connection DB failed');
+$conn = pg_connect("host=localhost port=5432 dbname=free_lance user= password=")  or die('connection DB failed');
 
 $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in'));
 
@@ -71,8 +71,6 @@ foreach ($data->find('.user__tags') as $key => $value) {
                 }
             }
         }
-
-        //$all_tags[md5(str_replace(array(' ', '\r', '\n', '\t'), '', $v->plaintext))] = $v->plaintext;
     }
 }
 
@@ -184,33 +182,12 @@ foreach ( $user_arr as $key_user => $value_user ){
         }
     }
 
-//    print_r(  $del );
-//    echo "<br/>-----<br/>";
-//
-//    print_r(  substr($del, 0, -1) . ')');
-//    echo "<br/>-----<br/>";
-//
-//    if( $i == 2 ) {
-//        var_dump( $user_arr );
-//    }
-
-
   if ( count( $user_arr)>0) {
       pg_query($conn, substr($del, 0, -1) . ')');
       pg_query($conn, $ins_user);
   }
 
 }
-
-//echo "<pre>";
-//print_r($all_tags);
-//echo "</pre>";
-//echo "<pre>";
-//print_r($search);
-//echo "</pre>";
-//echo "<pre>";
-//print_r($user_arr);http
-//echo "</pre>";
 
 function is_in_str($str,$substr)
 {

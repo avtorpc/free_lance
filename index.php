@@ -4,7 +4,6 @@ ini_set('error_reporting', E_ALL);
 ini_set('memory_limit', '128M');
 set_time_limit(0);
 
-
 require_once 'app/ClassGetPage.php';
 require_once 'app/ClassPageResolve.php';
 require_once 'vendor/simple_html_dom.php';
@@ -12,30 +11,33 @@ require_once 'vendor/simple_html_dom.php';
 use app\ClassGetPage;
 use app\ClassPageResolve;
 
-$search_string = null; // или null если надо выбирать всех пользователей со страницы
+$search_string = 'react'; // Тег для поиска или null если надо выбирать всех пользователей со страницы
 
 $cURL = new ClassGetPage;
 
-$conn = pg_connect("host=localhost port=5432 dbname=free_lance user= password=")  or die('connection DB failed');
+$conn = pg_connect("host=localhost port=5432 dbname=free_lance user=iq_energy_programmer password=radatop")  or die('connection DB failed');
+
 
 $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in'));
 
-if (count($data->find('form.js-signin-form')) != 0) {
-    $auth = array(
-        'user[email]' => 'jz@codedone.io',
-        'user[password]' => 'testfree',
-        'authenticity_token' => $data->find('input[name="authenticity_token"]', 0)->value,
-        'utf8' => $data->find('input[name="utf8"]', 0)->value
-    );
-    $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in', $auth));
-}
+if ( gettype ( $data ) !='object')  die( 'no parse sign_in page');
+
+    if (count($data->find('form.js-signin-form')) != 0) {
+        $auth = array(
+            'user[email]' => 'jz@codedone.io',
+            'user[password]' => 'testfree',
+            'authenticity_token' => $data->find('input[name="authenticity_token"]', 0)->value,
+            'utf8' => $data->find('input[name="utf8"]', 0)->value
+        );
+        $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in', $auth));
+    }
 
 //Получаем максимальный номер страницы
 $pAGE = new ClassPageResolve;
 $all_tags = [];
 
-for( $i= 1; $i<=100; $i++) {// Управляем количеством страниц которые обходим
-
+for( $i= 1; $i<=10; $i++) {// Управляем количеством страниц которые обходим
+    $t = time();
     $data = str_get_html($cURL->getPage('https://freelansim.ru/freelancers?page=' . $i));
 
     $user_arr = [];
@@ -172,9 +174,9 @@ for( $i= 1; $i<=100; $i++) {// Управляем количеством стр�
                 $ins_user = $ins_user . "INSERT INTO lancers.telegramm(login, link_user) VALUES ( '" . $val_telegramm . "'," . "'" . $key_user . "');";
             }
         }
-        if (isset($value_user['contact']['telegramm'])) {
-            foreach ($value_user['contact']['telegramm'] as $key_telegramm => $val_telegramm) {
-                $ins_user = $ins_user . "INSERT INTO lancers.telegramm(login, link_user) VALUES ( '" . $val_telegramm . "'," . "'" . $key_user . "');";
+        if (isset($value_user['contact']['phone'])) {
+            foreach ($value_user['contact']['phone'] as $key_phone => $val_phone) {
+                $ins_user = $ins_user . "INSERT INTO lancers.phone(num_phone, link_user) VALUES ( '" . $val_phone . "'," . "'" . $key_user . "');";
             }
         }
         if (isset($value_user['tags'])) {
@@ -189,6 +191,12 @@ for( $i= 1; $i<=100; $i++) {// Управляем количеством стр�
         pg_query($conn, substr($del, 0, -1) . ')');
         pg_query($conn, $ins_user);
     }
+
+    $fd = fopen("log.txt", 'a+') or die("не удалось открыть файл");
+    $t1 =time();
+    fwrite($fd, $t1 . '---' . ($t1 -$t) . '---' . $i . PHP_EOL);
+    fclose($fd);
+
 }
 
 if( count( $all_tags)>0){

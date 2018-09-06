@@ -17,7 +17,6 @@ class ClassGetPage{
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); // следовать за редиректами
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);// таймаут4
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        //curl_setopt($ch, CURLOPT_HEADERFUNCTION, [ $this, "HandleHeaderLine"]);
         curl_setopt($ch, CURLOPT_COOKIEJAR, dirname(__FILE__).'/cookie.txt'); // сохранять куки в файл
         curl_setopt($ch, CURLOPT_COOKIEFILE,  dirname(__FILE__).'/cookie.txt');
         curl_setopt($ch, CURLOPT_POST, $post!==0 ); // использовать данные в post
@@ -28,14 +27,6 @@ class ClassGetPage{
         curl_close($ch);
         return $data;
     }
-
-    private function HandleHeaderLine( $curl, $header_line ) {
-        echo "<pre>";
-        print_r(  "<br>YEAH: ".$header_line ); // or do whatever
-        echo "</pre>";
-        return strlen($header_line);
-    }
-
 
     public function getMaxNumberPage( $data ){
         foreach( $data->find( '.pagination a' ) as $key=>$value ) {

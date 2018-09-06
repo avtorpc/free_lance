@@ -1,11 +1,10 @@
 <?php
 ini_set('display_errors', 1);
 ini_set('error_reporting', E_ALL);
-ini_set('memory_limit', '128M');
+ini_set('memory_limit', '512M');
 set_time_limit(0);
 
 require_once 'app/ClassGetPage.php';
-require_once 'app/ClassPageResolve.php';
 require_once 'vendor/simple_html_dom.php';
 
 use app\ClassGetPage;
@@ -19,23 +18,23 @@ $conn = pg_connect("host=localhost port=5432 dbname=onebigba_free_lance user=one
 
 $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in'));
 
-if ( gettype ( $data ) !='object')  die( 'no parse sign_in page');
+if (gettype($data) != 'object') die('no parse sign_in page');
 
-    if (count($data->find('form.js-signin-form')) != 0) {
-        $auth = array(
-            'user[email]' => 'jz@codedone.io',
-            'user[password]' => 'testfree',
-            'authenticity_token' => $data->find('input[name="authenticity_token"]', 0)->value,
-            'utf8' => $data->find('input[name="utf8"]', 0)->value
-        );
-        $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in', $auth));
-    }
+if (count($data->find('form.js-signin-form')) != 0) {
+    $auth = array(
+        'user[email]' => 'jz@codedone.io',
+        'user[password]' => 'testfree',
+        'authenticity_token' => $data->find('input[name="authenticity_token"]', 0)->value,
+        'utf8' => $data->find('input[name="utf8"]', 0)->value
+    );
+    $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in', $auth));
+}
 
 //Получаем максимальный номер страницы
-$pAGE = new ClassPageResolve;
 $all_tags = [];
+$pAGE = $cURL->getMaxNumberPage(str_get_html($cURL->getPage('https://freelansim.ru/freelancers')));
 
-for( $i= 1; $i<=$pAGE; $i++) {// Управляем количеством страниц которые обходим
+for ($i = 1; $i <= $pAGE; $i++) {// Управляем количеством страниц которые обходим
     $t = time();
     $data = str_get_html($cURL->getPage('https://freelansim.ru/freelancers?page=' . $i));
 
@@ -88,7 +87,7 @@ for( $i= 1; $i<=$pAGE; $i++) {// Управляем количеством ст�
         $user_arr[$key_user]['payment'] = isset($user[3]->plaintext) ? $user[3]->plaintext : null;
 
         $user = $data->find('.user-data__about');
-        $user_arr[$key_user]['about'] = $user[0]->plaintext;
+        $user_arr[$key_user]['about'] = isset($user[0]->plaintext) ? $user[0]->plaintext : null;
 
         $user_arr[$key_user]['about'] = str_replace(['Telegram', 'telegram:', 'Skype', 'skype'], [' Telegram', ' telegram:', ' Skype', ' skype'], $user_arr[$key_user]['about']);
 
@@ -192,38 +191,27 @@ for( $i= 1; $i<=$pAGE; $i++) {// Управляем количеством ст�
     }
 
     $fd = fopen("log.txt", 'a+') or die("не удалось открыть файл");
-    $t1 =time();
-    fwrite($fd, $t1 . '---' . ($t1 -$t) . '---' . $i . PHP_EOL);
+    $t1 = time();
+    fwrite($fd, $t1 . '---' . ($t1 - $t) . '---' . $i . PHP_EOL);
     fclose($fd);
 
 }
 
-if( count( $all_tags)>0){
+if (count($all_tags) > 0) {
     $ins_tags = '';
-    foreach( $all_tags as $key_tags => $val_tags ) {
+    foreach ($all_tags as $key_tags => $val_tags) {
         $del_tags = $del_tags . "'" . $key_tags . "',";
         $ins_tags = $ins_tags . "INSERT INTO lancers.tags(tag, hash) VALUES ( '" . $val_tags . "'," . "'" . $key_tags . "');";
     }
     pg_query($conn, substr($del_tags, 0, -1) . ')');
-    pg_query($conn, $ins_tags );
+    pg_query($conn, $ins_tags);
 
 }
 
-function is_in_str($str,$substr)
-{
-    $result = strripos ($str, $substr);
+function is_in_str($str, $substr) {
+    $result = strripos($str, $substr);
     if ($result === FALSE)
         return false;
     else
         return true;
 }
-
-
-
-
-
-
-
-
-
-

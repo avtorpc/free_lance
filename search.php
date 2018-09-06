@@ -10,7 +10,23 @@ require_once 'vendor/simple_html_dom.php';
 use app\ClassGetPage;
 use app\ClassPageResolve;
 
-$search_string = "react"; // или null если надо выбирать всех пользователей со страницы
+if ( isset( $_REQUEST['tag']) ) {
+    if( $_REQUEST['tag'] == 'null') {
+        $search_string = null;
+    } else {
+        $search_string = $_REQUEST['tag'];
+    }
+} else { die( 'no form');}
+
+if ( isset( $_REQUEST['page']) ) {
+    if( $_REQUEST['page'] == 'null') {
+        $pAGE = $cURL->getMaxNumberPage(str_get_html($cURL->getPage('https://freelansim.ru/freelancers')));
+    } else {
+        $pAGE = (int) $_REQUEST['page'];
+    }
+} else { die( 'no form');}
+
+//$search_string = "react"; // или null если надо выбирать всех пользователей со страницы
 
 $cURL = new ClassGetPage;
 

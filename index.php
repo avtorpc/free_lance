@@ -11,12 +11,11 @@ require_once 'vendor/simple_html_dom.php';
 use app\ClassGetPage;
 use app\ClassPageResolve;
 
-$search_string = 'react'; // Тег для поиска или null если надо выбирать всех пользователей со страницы
+$search_string = "react"; // или null если надо выбирать всех пользователей со страницы
 
 $cURL = new ClassGetPage;
 
-$conn = pg_connect("host=localhost port=5432 dbname=free_lance user=iq_energy_programmer password=radatop")  or die('connection DB failed');
-
+$conn = pg_connect("host=localhost port=5432 dbname=onebigba_free_lance user=onebigbag password=67jhhjgHD^5H")  or die('connection DB failed');
 
 $data = str_get_html($cURL->getPage('https://freelansim.ru/users/sign_in'));
 
@@ -36,7 +35,7 @@ if ( gettype ( $data ) !='object')  die( 'no parse sign_in page');
 $pAGE = new ClassPageResolve;
 $all_tags = [];
 
-for( $i= 1; $i<=10; $i++) {// Управляем количеством страниц которые обходим
+for( $i= 1; $i<=$pAGE; $i++) {// Управляем количеством страниц которые обходим
     $t = time();
     $data = str_get_html($cURL->getPage('https://freelansim.ru/freelancers?page=' . $i));
 
